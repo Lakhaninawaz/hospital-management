@@ -42,8 +42,7 @@ export const AuthProvider = ({ children }) => {
 
   const doctorSignup = async (payload) => {
     const data = await apiRequest("/auth/doctor-signup", "POST", payload);
-    setUser(data.user);
-    setToken(data.token);
+    // Don't auto-login after signup - let them login manually
     return data.user;
   };
 

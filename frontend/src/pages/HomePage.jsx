@@ -81,6 +81,42 @@ function HomePage() {
           </div>
         </div>
       </section>
+
+      <footer className="footer">
+        <div className="container footer-content">
+          <div className="footer-column">
+            <h4>Hospital Management</h4>
+            <p>Your trusted healthcare companion for seamless appointment booking and health management.</p>
+          </div>
+          <div className="footer-column">
+            <h4>Quick Links</h4>
+            <ul>
+              <li><Link to="/login">Login</Link></li>
+              <li><Link to="/signup">Sign Up</Link></li>
+              <li><a href="#about">About Us</a></li>
+              <li><a href="#contact">Contact</a></li>
+            </ul>
+          </div>
+          <div className="footer-column">
+            <h4>Support</h4>
+            <ul>
+              <li><a href="#faq">FAQ</a></li>
+              <li><a href="#help">Help Center</a></li>
+              <li><a href="#privacy">Privacy Policy</a></li>
+              <li><a href="#terms">Terms of Service</a></li>
+            </ul>
+          </div>
+          <div className="footer-column">
+            <h4>Contact Us</h4>
+            <p>Email: <a href="mailto:support@hospital.com">support@hospital.com</a></p>
+            <p>Phone: <a href="tel:+1234567890">+1 (234) 567-890</a></p>
+            <p>Available 24/7 for your support needs</p>
+          </div>
+        </div>
+        <div className="footer-bottom">
+          <p>&copy; 2024 Hospital Management System. All rights reserved.</p>
+        </div>
+      </footer>
     </div>
   );
 }
