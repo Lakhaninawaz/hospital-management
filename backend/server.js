@@ -42,6 +42,14 @@ connectDB()
     });
   })
   .catch((error) => {
-    console.error("Server startup error:", error.message);
-    process.exit(1);
+    console.error("Database connection failed:", error.message);
+    // In development, exit. In production, start server anyway for health checks
+    if (process.env.NODE_ENV === "production") {
+      console.warn("Starting server without database connection");
+      app.listen(PORT, () => {
+        console.log(`Server running on port ${PORT} (without DB)`);
+      });
+    } else {
+      process.exit(1);
+    }
   });
