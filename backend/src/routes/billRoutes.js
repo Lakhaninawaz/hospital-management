@@ -1,5 +1,5 @@
 const express = require("express");
-const { getMyBills, generateBill, downloadBillPdf } = require("../controllers/billController");
+const { getMyBills, generateBill } = require("../controllers/billController");
 const { protect, authorizeRoles } = require("../middleware/authMiddleware");
 
 const router = express.Router();
@@ -11,6 +11,5 @@ router.post(
   authorizeRoles("doctor"),
   generateBill
 );
-router.get("/download/:billId", protect, downloadBillPdf);
 
 module.exports = router;

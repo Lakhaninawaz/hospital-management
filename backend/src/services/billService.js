@@ -1,5 +1,6 @@
 const Appointment = require("../models/Appointment");
 const Bill = require("../models/Bill");
+const createBillPdf = require("../utils/createBillPdf");
 
 const generateBillForAppointment = async (appointmentId, userId, role) => {
   const appointment = await Appointment.findById(appointmentId)
@@ -22,10 +23,16 @@ const generateBillForAppointment = async (appointmentId, userId, role) => {
   }
 
   const amount = 650;
+  const pdfUrl = await createBillPdf({
+    appointment,
+    patientName: appointment.patientId.name,
+    doctorName: appointment.doctorId.name,
+    amount
+  });
 
   const bill = await Bill.findOneAndUpdate(
     { appointmentId },
-    { appointmentId, amount },
+    { appointmentId, amount, pdfUrl },
     { upsert: true, new: true }
   ).populate({
     path: "appointmentId",

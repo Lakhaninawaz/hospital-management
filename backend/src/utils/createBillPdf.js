@@ -1,13 +1,21 @@
+const fs = require("fs");
+const path = require("path");
 const PDFDocument = require("pdfkit");
 
 const createBillPdf = ({ appointment, patientName, doctorName, amount }) => {
   return new Promise((resolve, reject) => {
-    const buffers = [];
+    const filename = `bill-${appointment._id}.pdf`;
+    const relativePath = `/uploads/bills/${filename}`;
+    const filePath = path.join(__dirname, "../../uploads/bills", filename);
+
+    const uploadsDir = path.dirname(filePath);
+    if (!fs.existsSync(uploadsDir)) {
+      fs.mkdirSync(uploadsDir, { recursive: true });
+    }
 
     const doc = new PDFDocument({ margin: 50, size: "A4" });
-    doc.on("data", (chunk) => buffers.push(chunk));
-    doc.on("end", () => resolve(Buffer.concat(buffers)));
-    doc.on("error", reject);
+    const stream = fs.createWriteStream(filePath);
+    doc.pipe(stream);
 
     const pageW = doc.page.width;   // 595
     const L = 50;                   // left margin
@@ -177,6 +185,8 @@ const createBillPdf = ({ appointment, patientName, doctorName, amount }) => {
        );
 
     doc.end();
+    stream.on("finish", () => resolve(relativePath));
+    stream.on("error", reject);
   });
 };
 

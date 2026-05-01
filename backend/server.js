@@ -1,6 +1,8 @@
 const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
+const path = require("path");
+const fs = require("fs");
 
 const connectDB = require("./src/config/db");
 const authRoutes = require("./src/routes/authRoutes");
@@ -13,6 +15,12 @@ const notificationRoutes = require("./src/routes/notificationRoutes");
 dotenv.config();
 
 const app = express();
+const uploadsDir = path.join(__dirname, "uploads", "bills");
+
+// Create uploads directory if it doesn't exist (local development only)
+if (process.env.NODE_ENV !== "production" && !fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
 
 app.use(
   cors({
@@ -21,6 +29,10 @@ app.use(
   })
 );
 app.use(express.json());
+// Serve uploaded files (local development only)
+if (process.env.NODE_ENV !== "production") {
+  app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+}
 
 app.get("/", (req, res) => {
   res.json({ message: "Hospital Management API is running" });
