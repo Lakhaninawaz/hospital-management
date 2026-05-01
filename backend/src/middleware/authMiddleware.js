@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
+const Doctor = require("../models/Doctor");
 
 const protect = async (req, res, next) => {
   const authHeader = req.headers.authorization;
@@ -11,13 +12,22 @@ const protect = async (req, res, next) => {
   try {
     const token = authHeader.split(" ")[1];
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = await User.findById(decoded.id).select("-password");
 
-    if (!req.user) {
-      return res.status(401).json({ message: "User not found" });
+    // Try to find as patient first
+    let user = await User.findById(decoded.id).select("-password");
+    if (user) {
+      req.user = { ...user._doc, role: "patient" };
+      return next();
     }
 
-    next();
+    // Try to find as doctor
+    let doctor = await Doctor.findById(decoded.id).select("-password");
+    if (doctor) {
+      req.user = { ...doctor._doc, role: "doctor" };
+      return next();
+    }
+
+    return res.status(401).json({ message: "User not found" });
   } catch (error) {
     res.status(401).json({ message: "Invalid token" });
   }

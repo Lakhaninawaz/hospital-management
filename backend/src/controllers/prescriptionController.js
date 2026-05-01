@@ -1,5 +1,4 @@
 const Appointment = require("../models/Appointment");
-const Doctor = require("../models/Doctor");
 const Prescription = require("../models/Prescription");
 const { generateBillForAppointment } = require("../services/billService");
 
@@ -14,8 +13,8 @@ const addPrescription = async (req, res) => {
       return res.status(404).json({ message: "Appointment not found" });
     }
 
-    const doctorProfile = await Doctor.findOne({ userId: req.user._id });
-    if (String(appointment.doctorId._id) !== String(doctorProfile._id)) {
+    // Verify doctor owns this appointment
+    if (String(appointment.doctorId._id) !== String(req.user._id)) {
       return res.status(403).json({ message: "Access denied" });
     }
 

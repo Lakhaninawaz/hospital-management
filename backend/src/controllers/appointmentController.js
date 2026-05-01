@@ -1,5 +1,6 @@
 const Appointment = require("../models/Appointment");
 const User = require("../models/User");
+const Doctor = require("../models/Doctor");
 
 const createAppointment = async (req, res) => {
   try {
@@ -16,9 +17,9 @@ const createAppointment = async (req, res) => {
         .json({ message: "Past date appointments are not allowed" });
     }
 
-    const doctor = await User.findById(doctorId);
+    const doctor = await Doctor.findById(doctorId);
 
-    if (!doctor || doctor.role !== "doctor") {
+    if (!doctor) {
       return res.status(404).json({ message: "Doctor not found" });
     }
 

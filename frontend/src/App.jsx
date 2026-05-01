@@ -1,4 +1,4 @@
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
 import Navbar from "./components/Navbar";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -12,10 +12,14 @@ import DoctorDashboard from "./pages/DoctorDashboard";
 
 function App() {
   const { user } = useAuth();
+  const location = useLocation();
+
+  // Hide navbar on dashboard routes
+  const hideNavbar = location.pathname === "/doctor";
 
   return (
     <>
-      {(!user || user.role === "patient") && <Navbar />}
+      {!hideNavbar && <Navbar />}
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginPage role="patient" />} />

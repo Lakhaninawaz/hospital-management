@@ -15,18 +15,9 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true
     },
-    role: {
-      type: String,
-      enum: ["patient", "doctor"],
-      default: "patient"
-    },
     isApproved: {
       type: Boolean,
       default: true
-    },
-    specialization: {
-      type: String,
-      default: null
     }
   },
   { timestamps: true }

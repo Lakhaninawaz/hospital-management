@@ -1,5 +1,4 @@
 const Appointment = require("../models/Appointment");
-const Doctor = require("../models/Doctor");
 const Bill = require("../models/Bill");
 const { generateBillForAppointment } = require("../services/billService");
 
@@ -18,8 +17,8 @@ const getMyBills = async (req, res) => {
         ]
       });
     } else {
-      const doctorProfile = await Doctor.findOne({ userId: req.user._id });
-      const appointments = await Appointment.find({ doctorId: doctorProfile._id });
+      // For doctor role, get appointments where doctor is the doctor
+      const appointments = await Appointment.find({ doctorId: req.user._id });
       const appointmentIds = appointments.map((item) => item._id);
       bills = await Bill.find({ appointmentId: { $in: appointmentIds } }).populate({
         path: "appointmentId",
@@ -38,7 +37,7 @@ const getMyBills = async (req, res) => {
 
 const generateBill = async (req, res) => {
   try {
-    const bill = await generateBillForAppointment(req.params.appointmentId, req.user._id);
+    const bill = await generateBillForAppointment(req.params.appointmentId, req.user._id, req.user.role);
     res.status(201).json(bill);
   } catch (error) {
     res

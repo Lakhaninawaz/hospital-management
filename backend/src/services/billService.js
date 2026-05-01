@@ -1,9 +1,8 @@
 const Appointment = require("../models/Appointment");
 const Bill = require("../models/Bill");
-const Doctor = require("../models/Doctor");
 const createBillPdf = require("../utils/createBillPdf");
 
-const generateBillForAppointment = async (appointmentId, doctorUserId) => {
+const generateBillForAppointment = async (appointmentId, userId, role) => {
   const appointment = await Appointment.findById(appointmentId)
     .populate("patientId", "name email")
     .populate("doctorId", "name specialization");
@@ -14,10 +13,9 @@ const generateBillForAppointment = async (appointmentId, doctorUserId) => {
     throw error;
   }
 
-  if (doctorUserId) {
-    const doctorProfile = await Doctor.findOne({ userId: doctorUserId });
-
-    if (!doctorProfile || String(appointment.doctorId._id) !== String(doctorProfile._id)) {
+  // Verify doctor access to this appointment
+  if (role === "doctor") {
+    if (String(appointment.doctorId._id) !== String(userId)) {
       const error = new Error("Access denied");
       error.statusCode = 403;
       throw error;

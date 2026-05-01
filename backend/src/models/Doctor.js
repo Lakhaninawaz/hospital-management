@@ -2,18 +2,26 @@ const mongoose = require("mongoose");
 
 const doctorSchema = new mongoose.Schema(
   {
-    userId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+    name: {
+      type: String,
       required: true
     },
-    name: {
+    email: {
+      type: String,
+      required: true,
+      unique: true
+    },
+    password: {
       type: String,
       required: true
     },
     specialization: {
       type: String,
       required: true
+    },
+    isApproved: {
+      type: Boolean,
+      default: true
     }
   },
   { timestamps: true }
