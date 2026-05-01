@@ -69,6 +69,7 @@ textarea {
   top: 0;
   z-index: 10;
   backdrop-filter: blur(18px);
+  overflow: visible;
 }
 
 .nav-inner {
@@ -77,6 +78,7 @@ textarea {
   align-items: center;
   min-height: 80px;
   gap: 20px;
+  overflow: visible;
 }
 
 .brand-wrap {
@@ -120,6 +122,7 @@ textarea {
   gap: 10px;
   align-items: center;
   margin-left: auto;
+  overflow: visible;
 }
 
 .nav-links a,
@@ -144,6 +147,7 @@ textarea {
   position: relative;
   display: flex;
   align-items: center;
+  z-index: 100;
 }
 
 .doctor-dropdown-toggle {
@@ -178,15 +182,16 @@ textarea {
 .doctor-dropdown-menu {
   position: absolute;
   top: 100%;
-  left: 0;
+  left: -10px;
   background: var(--card-solid);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  min-width: 160px;
+  min-width: 180px;
   box-shadow: var(--shadow-soft);
-  z-index: 20;
-  margin-top: 4px;
-  overflow: hidden;
+  z-index: 200;
+  margin-top: 8px;
+  overflow: visible;
+  padding: 8px 0;
 }
 
 .doctor-dropdown-menu a {
@@ -214,6 +219,7 @@ textarea {
     width: 100%;
     flex-direction: column;
     align-items: stretch;
+    z-index: 100;
   }
 
   .doctor-dropdown-toggle {
@@ -233,6 +239,7 @@ textarea {
     margin-bottom: -12px;
     width: calc(100% + 24px);
     border-radius: 0 0 18px 18px;
+    padding: 0;
   }
 
   .doctor-dropdown-menu a {

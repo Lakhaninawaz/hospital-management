@@ -9,6 +9,7 @@ function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDoctorDropdownOpen, setIsDoctorDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
+  const dropdownTimeoutRef = useRef(null);
 
   useEffect(() => {
     setIsMenuOpen(false);
@@ -46,6 +47,19 @@ function Navbar() {
 
   const toggleDoctorDropdown = () => {
     setIsDoctorDropdownOpen((prev) => !prev);
+  };
+
+  const handleMouseEnterDropdown = () => {
+    if (dropdownTimeoutRef.current) {
+      clearTimeout(dropdownTimeoutRef.current);
+    }
+    setIsDoctorDropdownOpen(true);
+  };
+
+  const handleMouseLeaveDropdown = () => {
+    dropdownTimeoutRef.current = setTimeout(() => {
+      setIsDoctorDropdownOpen(false);
+    }, 150);
   };
 
   return (
@@ -117,8 +131,8 @@ function Navbar() {
               <div
                 ref={dropdownRef}
                 className={`doctor-dropdown ${isDoctorDropdownOpen ? "open" : ""}`}
-                onMouseEnter={() => setIsDoctorDropdownOpen(true)}
-                onMouseLeave={() => setIsDoctorDropdownOpen(false)}
+                onMouseEnter={handleMouseEnterDropdown}
+                onMouseLeave={handleMouseLeaveDropdown}
               >
                 <button 
                   className="doctor-dropdown-toggle"

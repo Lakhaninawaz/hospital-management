@@ -8,132 +8,183 @@ const createBillPdf = ({ appointment, patientName, doctorName, amount }) => {
     const relativePath = `/uploads/bills/${filename}`;
     const filePath = path.join(__dirname, "../../uploads/bills", filename);
 
-    // Create uploads directory if it doesn't exist
     const uploadsDir = path.dirname(filePath);
     if (!fs.existsSync(uploadsDir)) {
       fs.mkdirSync(uploadsDir, { recursive: true });
     }
 
-    const doc = new PDFDocument({ margin: 40 });
+    const doc = new PDFDocument({ margin: 50, size: "A4" });
     const stream = fs.createWriteStream(filePath);
-
     doc.pipe(stream);
 
-    // Hospital Header
-    doc.fontSize(20).font("Helvetica-Bold").text("HEALTHCARE HOSPITAL", { align: "center" });
-    doc.fontSize(10).font("Helvetica").text("Quality Care for Better Health", { align: "center" });
-    doc.fontSize(9).fillColor("#666666").text("📍 123 Medical Avenue, City | 📞 1-800-HOSPITAL | 📧 billing@healthcare.com", { align: "center" });
-    doc.moveDown(0.5);
-    
-    // Horizontal line
-    doc.strokeColor("#000000").lineWidth(0.5).moveTo(40, doc.y).lineTo(555, doc.y).stroke();
-    doc.moveDown(0.5);
+    const pageW = doc.page.width;   // 595
+    const L = 50;                   // left margin
+    const R = pageW - 50;           // right margin
+    const contentW = R - L;         // 495
 
-    // Invoice Title and Details
-    doc.fontSize(14).font("Helvetica-Bold").fillColor("#000000").text("INVOICE", { align: "left" });
-    doc.fontSize(10).font("Helvetica");
-    
-    const invoiceDetailsY = doc.y;
-    doc.text(`Invoice No: INV-${appointment._id.toString().slice(-8).toUpperCase()}`, 40, invoiceDetailsY);
-    doc.text(`Bill Date: ${new Date(appointment.date).toLocaleDateString()}`, 40, invoiceDetailsY + 15);
-    doc.text(`Bill Time: ${new Date(appointment.date).toLocaleTimeString()}`, 40, invoiceDetailsY + 30);
+    // ── HEADER ──────────────────────────────────────────────
+    doc
+      .rect(L, 40, contentW, 70)
+      .fillAndStroke("#1e40af", "#1e40af");
 
-    doc.moveDown(2.5);
+    doc
+      .fillColor("#ffffff")
+      .fontSize(20)
+      .font("Helvetica-Bold")
+      .text("CAREPOINT HOSPITAL", L, 52, { width: contentW, align: "center" });
 
-    // Patient and Doctor Information
-    doc.font("Helvetica-Bold").fontSize(10).text("PATIENT INFORMATION", { underline: true });
-    doc.font("Helvetica").fontSize(9);
-    doc.text(`Name: ${patientName}`);
-    doc.text(`Appointment ID: ${appointment._id}`);
-    doc.moveDown(0.5);
+    doc
+      .fontSize(9)
+      .font("Helvetica")
+      .text("Quality Care for Better Health", L, 76, { width: contentW, align: "center" });
 
-    doc.font("Helvetica-Bold").fontSize(10).text("DOCTOR INFORMATION", { underline: true });
-    doc.font("Helvetica").fontSize(9);
-    doc.text(`Doctor: ${doctorName}`);
-    doc.text(`Specialization: ${appointment.doctorId?.specialization || "General"}`);
-    doc.moveDown(1);
+    doc
+      .fontSize(8)
+      .text(
+        "123 Medical Avenue, City   |   1-800-HOSPITAL   |   billing@carepoint.com",
+        L, 90, { width: contentW, align: "center" }
+      );
 
-    // Items Table
-    const tableTop = doc.y;
-    const col1X = 40;
-    const col2X = 320;
-    const col3X = 430;
-    const col4X = 520;
-    const rowHeight = 25;
+    // ── INVOICE TITLE BAR ────────────────────────────────────
+    doc
+      .rect(L, 120, contentW, 24)
+      .fillAndStroke("#e8f0fe", "#1e40af");
 
-    // Table Header
-    doc.rect(col1X, tableTop, 515, rowHeight).fillAndStroke("#1e40af", "#000000");
-    doc.fillColor("#ffffff").font("Helvetica-Bold").fontSize(10);
-    doc.text("Description", col1X + 10, tableTop + 5);
-    doc.text("Quantity", col2X + 10, tableTop + 5);
-    doc.text("Unit Price", col3X + 10, tableTop + 5);
-    doc.text("Amount", col4X + 10, tableTop + 5);
+    doc
+      .fillColor("#1e40af")
+      .fontSize(13)
+      .font("Helvetica-Bold")
+      .text("INVOICE", L, 126, { width: contentW, align: "center" });
 
-    // Table Items
-    doc.fillColor("#000000").font("Helvetica");
-    let currentY = tableTop + rowHeight;
+    // ── INVOICE META (two-column) ────────────────────────────
+    let y = 158;
+    const col1 = L;
+    const col2 = L + contentW / 2 + 20;
 
-    // Item 1: Consultation Fee
-    const consultationFee = 500;
-    doc.rect(col1X, currentY, 515, rowHeight).stroke("#cccccc");
-    doc.fontSize(9).text("Consultation Fee", col1X + 10, currentY + 5);
-    doc.text("1", col2X + 50, currentY + 5);
-    doc.text(`Rs. ${consultationFee}`, col3X + 10, currentY + 5);
-    doc.text(`Rs. ${consultationFee}`, col4X + 10, currentY + 5);
-    currentY += rowHeight;
+    doc.fillColor("#333333").fontSize(9).font("Helvetica-Bold");
+    doc.text("Invoice No:", col1, y);
+    doc.text("Bill Date:", col1, y + 16);
+    doc.text("Bill Time:", col1, y + 32);
 
-    // Item 2: Prescription Handling
-    const prescriptionFee = 150;
-    doc.rect(col1X, currentY, 515, rowHeight).stroke("#cccccc");
-    doc.text("Prescription Handling", col1X + 10, currentY + 5);
-    doc.text("1", col2X + 50, currentY + 5);
-    doc.text(`Rs. ${prescriptionFee}`, col3X + 10, currentY + 5);
-    doc.text(`Rs. ${prescriptionFee}`, col4X + 10, currentY + 5);
-    currentY += rowHeight;
+    doc.font("Helvetica").fillColor("#000000");
+    doc.text(`INV-${appointment._id.toString().slice(-8).toUpperCase()}`, col1 + 80, y);
+    doc.text(new Date(appointment.date).toLocaleDateString(), col1 + 80, y + 16);
+    doc.text(new Date(appointment.date).toLocaleTimeString(), col1 + 80, y + 32);
 
-    doc.moveDown(0.5);
+    // ── DIVIDER ──────────────────────────────────────────────
+    y += 54;
+    doc.strokeColor("#cccccc").lineWidth(0.8).moveTo(L, y).lineTo(R, y).stroke();
 
-    // Summary Section
-    const summaryX = col3X - 20;
-    doc.font("Helvetica").fontSize(10);
-    doc.text("Subtotal:", summaryX, doc.y);
-    doc.text(`Rs. ${amount}`, col4X + 10, doc.y - 15);
-    
-    doc.moveDown(0.5);
-    
-    doc.text("Tax (0%):", summaryX, doc.y);
-    doc.text("Rs. 0", col4X + 10, doc.y - 15);
-    
-    doc.moveDown(0.8);
+    // ── PATIENT & DOCTOR INFO (two-column) ───────────────────
+    y += 12;
+    const infoBoxH = 68;
 
-    // Total
-    doc.rect(summaryX - 10, doc.y - 5, 180, 25).fillAndStroke("#1e40af");
-    doc.fillColor("#ffffff").font("Helvetica-Bold").fontSize(11);
-    doc.text("TOTAL AMOUNT:", summaryX, doc.y + 3);
-    doc.text(`Rs. ${amount}`, col4X + 10, doc.y - 15);
+    // Patient box
+    doc.rect(col1, y, contentW / 2 - 8, infoBoxH).fillAndStroke("#f8faff", "#dde6ff");
+    doc.fillColor("#1e40af").fontSize(8).font("Helvetica-Bold")
+       .text("PATIENT INFORMATION", col1 + 8, y + 8);
+    doc.fillColor("#000000").fontSize(9).font("Helvetica")
+       .text(`Name:`, col1 + 8, y + 22)
+       .text(patientName, col1 + 55, y + 22)
+       .text(`Appt ID:`, col1 + 8, y + 38)
+       .text(appointment._id.toString().slice(-10).toUpperCase(), col1 + 55, y + 38);
 
-    doc.moveDown(1.5);
+    // Doctor box
+    const dCol = col1 + contentW / 2 + 8;
+    const dW = contentW / 2 - 8;
+    doc.rect(dCol, y, dW, infoBoxH).fillAndStroke("#f8faff", "#dde6ff");
+    doc.fillColor("#1e40af").fontSize(8).font("Helvetica-Bold")
+       .text("DOCTOR INFORMATION", dCol + 8, y + 8);
+    doc.fillColor("#000000").fontSize(9).font("Helvetica")
+       .text(`Doctor:`, dCol + 8, y + 22)
+       .text(doctorName, dCol + 55, y + 22)
+       .text(`Specialty:`, dCol + 8, y + 38)
+       .text(appointment.doctorId?.specialization || "General", dCol + 55, y + 38);
 
-    // Payment Terms
-    doc.fillColor("#000000").font("Helvetica-Bold").fontSize(9).text("Payment Terms:", { underline: true });
-    doc.font("Helvetica").fontSize(8).fillColor("#666666");
-    doc.text("Payment due within 7 days of invoice date.");
-    doc.text("Please make payment to: Healthcare Hospital Account");
-    doc.moveDown(0.8);
+    // ── TABLE ────────────────────────────────────────────────
+    y += infoBoxH + 18;
 
-    // Footer
-    doc.fontSize(8).fillColor("#666666");
-    doc.text("Thank you for choosing Healthcare Hospital. We appreciate your trust in our services.", { align: "center" });
-    doc.text("This is an electronically generated invoice. No signature required.", { align: "center" });
-    
-    // Footer line
-    doc.moveDown(0.5);
-    doc.strokeColor("#999999").lineWidth(0.5).moveTo(40, doc.y).lineTo(555, doc.y).stroke();
-    
-    doc.fontSize(8).text("© 2025 Healthcare Hospital. All rights reserved.", { align: "center" });
+    const tDesc  = L;
+    const tQty   = L + 240;
+    const tUnit  = L + 320;
+    const tAmt   = L + 410;
+    const tEnd   = R;
+    const rowH   = 26;
+
+    // Table header
+    doc.rect(tDesc, y, tEnd - tDesc, rowH).fillAndStroke("#1e40af", "#1e40af");
+    doc.fillColor("#ffffff").fontSize(9).font("Helvetica-Bold");
+    doc.text("Description",  tDesc + 8,  y + 8, { width: 220 });
+    doc.text("Qty",          tQty  + 4,  y + 8, { width: 70, align: "center" });
+    doc.text("Unit Price",   tUnit + 4,  y + 8, { width: 80, align: "right" });
+    doc.text("Amount",       tAmt  + 4,  y + 8, { width: tEnd - tAmt - 8, align: "right" });
+
+    // Helper: draw one table row
+    const drawRow = (label, qty, unitPrice, rowAmt, rowY, shade) => {
+      doc.rect(tDesc, rowY, tEnd - tDesc, rowH)
+         .fillAndStroke(shade ? "#f0f4ff" : "#ffffff", "#dde6ff");
+      doc.fillColor("#000000").fontSize(9).font("Helvetica");
+      doc.text(label,          tDesc + 8,  rowY + 8, { width: 220 });
+      doc.text(String(qty),    tQty  + 4,  rowY + 8, { width: 70,  align: "center" });
+      doc.text(`Rs. ${unitPrice}`, tUnit + 4, rowY + 8, { width: 80,  align: "right" });
+      doc.text(`Rs. ${rowAmt}`,    tAmt  + 4, rowY + 8, { width: tEnd - tAmt - 8, align: "right" });
+    };
+
+    const consultationFee  = 500;
+    const prescriptionFee  = 150;
+
+    drawRow("Consultation Fee",      1, consultationFee, consultationFee, y + rowH,     false);
+    drawRow("Prescription Handling", 1, prescriptionFee, prescriptionFee, y + rowH * 2, true);
+
+    // ── TOTALS ───────────────────────────────────────────────
+    y += rowH * 3 + 10;
+
+    const sumLabelX = tUnit + 4;
+    const sumValX   = tAmt  + 4;
+    const sumValW   = tEnd - tAmt - 8;
+
+    doc.fillColor("#333333").fontSize(9).font("Helvetica");
+    doc.text("Subtotal:",  sumLabelX, y,      { width: 80, align: "right" });
+    doc.text(`Rs. ${amount}`, sumValX, y,     { width: sumValW, align: "right" });
+
+    doc.text("Tax (0%):",  sumLabelX, y + 16, { width: 80, align: "right" });
+    doc.text("Rs. 0",      sumValX,   y + 16, { width: sumValW, align: "right" });
+
+    y += 36;
+    doc.rect(tUnit, y, tEnd - tUnit, 26).fillAndStroke("#1e40af", "#1e40af");
+    doc.fillColor("#ffffff").fontSize(10).font("Helvetica-Bold");
+    doc.text("TOTAL:",         sumLabelX, y + 7, { width: 80,      align: "right" });
+    doc.text(`Rs. ${amount}`,  sumValX,   y + 7, { width: sumValW, align: "right" });
+
+    // ── PAYMENT TERMS ────────────────────────────────────────
+    y += 42;
+    doc.rect(L, y, contentW, 44).fillAndStroke("#fffbeb", "#fcd34d");
+    doc.fillColor("#92400e").fontSize(8).font("Helvetica-Bold")
+       .text("Payment Terms", L + 10, y + 8);
+    doc.fillColor("#333333").font("Helvetica")
+       .text("Payment due within 7 days of invoice date.", L + 10, y + 20)
+       .text("Please make payment to: Healthcare Hospital Account", L + 10, y + 32);
+
+    // ── FOOTER ───────────────────────────────────────────────
+    y += 60;
+    doc.strokeColor("#cccccc").lineWidth(0.5).moveTo(L, y).lineTo(R, y).stroke();
+    y += 8;
+
+    doc.fillColor("#666666").fontSize(8).font("Helvetica")
+       .text(
+         "Thank you for choosing Healthcare Hospital. We appreciate your trust in our services.",
+         L, y, { width: contentW, align: "center" }
+       )
+       .text(
+         "This is an electronically generated invoice. No signature required.",
+         L, y + 12, { width: contentW, align: "center" }
+       )
+       .text(
+         "© 2025 Healthcare Hospital. All rights reserved.",
+         L, y + 26, { width: contentW, align: "center" }
+       );
 
     doc.end();
-
     stream.on("finish", () => resolve(relativePath));
     stream.on("error", reject);
   });
